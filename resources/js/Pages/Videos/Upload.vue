@@ -5,6 +5,16 @@ import { ref } from 'vue';
 const videoInput = ref<HTMLInputElement | null>(null);
 const videoPreview = ref<string | null>(null);
 
+const props = defineProps<{
+    myVideos: Array<{
+        id: number;
+        title: string;
+        views: number;
+        status: string;
+        created_at: string;
+    }>;
+}>();
+
 const form = useForm({
     title: '',
     description: '',
@@ -137,6 +147,38 @@ const submit = () => {
                     </div>
                 </div>
             </form>
+
+            <!-- My Recent Videos / Dashboard -->
+            <div class="mt-12">
+                <h2 class="text-xl font-bold mb-6">My Recent Uploads</h2>
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 dark:bg-zinc-800/50">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Video</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Views</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
+                            <tr v-for="video in myVideos" :key="video.id" class="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                <td class="px-6 py-4 font-bold text-sm">{{ video.title }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase" :class="video.status === 'ready' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+                                        {{ video.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm">{{ video.views }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ new Date(video.created_at).toLocaleDateString() }}</td>
+                            </tr>
+                            <tr v-if="myVideos.length === 0">
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic">No videos uploaded yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <div class="mt-8 grid grid-cols-3 gap-6">
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/30">

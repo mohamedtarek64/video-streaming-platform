@@ -24,11 +24,20 @@ class VideoController extends Controller
             $query->where('category', $request->category);
         }
 
+        if ($request->filled('filter')) {
+            if ($request->filter === 'trending') {
+                $query->orderBy('views', 'desc');
+            } elseif ($request->filter === 'subscriptions' && auth()->check()) {
+                $channelIds = auth()->user()->subscriptions()->pluck('channel_id');
+                $query->whereIn('channel_id', $channelIds);
+            }
+        }
+
         $videos = $query->latest()->paginate(12)->withQueryString();
 
         return Inertia::render('Welcome', [
             'videos' => $videos,
-            'filters' => $request->only(['search', 'category']),
+            'filters' => $request->only(['search', 'category', 'filter']),
         ]);
     }
 
@@ -68,7 +77,18 @@ class VideoController extends Controller
 
     public function upload()
     {
-        return Inertia::render('Videos/Upload');
+        $user = auth()->user();
+        $channel = $user->channel;
+        
+        if (!$channel) {
+            return redirect()->route('channel.create');
+        }
+
+        $videos = $channel->videos()->latest()->take(5)->get();
+
+        return Inertia::render('Videos/Upload', [
+            'myVideos' => $videos,
+        ]);
     }
 
     public function store(Request $request)

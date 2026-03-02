@@ -29,11 +29,13 @@ const props = defineProps<{
     filters?: {
         search?: string;
         category?: string;
+        filter?: 'trending' | 'subscriptions';
     };
 }>();
 
 const searchTerm = ref(props.filters?.search || '');
 const currentCategory = ref(props.filters?.category || 'All');
+const currentFilter = ref(props.filters?.filter || '');
 
 const search = () => {
     router.get(route('home'), { 
@@ -115,19 +117,32 @@ const categories = [
         
         <div class="flex">
             <!-- Sidbar Menu (Left) -->
-            <aside class="hidden lg:block w-64 h-[calc(100vh-73px)] sticky top-[73px] p-4 bg-white dark:bg-zinc-950 border-r border-gray-100 dark:border-zinc-900 overflow-y-auto">
-                <div class="flex flex-col gap-1">
-                    <Link href="/" class="flex items-center gap-4 px-4 py-3 bg-gray-100 dark:bg-zinc-800 rounded-xl font-bold">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        <span>Home</span>
+            <aside class="hidden lg:block w-64 h-[calc(100vh-73px)] sticky top-[73px] p-4 bg-white dark:bg-zinc-950 border-r border-gray-100 dark:border-zinc-900">
+                <!-- Nav Links -->
+                <div class="px-3 space-y-1">
+                    <Link 
+                        :href="route('home')"
+                        class="flex items-center gap-5 px-3 py-2.5 rounded-xl transition-all"
+                        :class="!currentFilter ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' : 'hover:bg-gray-100 dark:hover:bg-zinc-800'"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span class="font-semibold">Home</span>
                     </Link>
-                    <Link href="#" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-xl transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-                        <span>Trending</span>
+                    <Link 
+                        :href="route('home', { filter: 'trending' })"
+                        class="flex items-center gap-5 px-3 py-2.5 rounded-xl transition-all"
+                        :class="currentFilter === 'trending' ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' : 'hover:bg-gray-100 dark:hover:bg-zinc-800'"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"></path><path d="m16 18-4 4-4-4"></path><path d="m16 6-4-4-4 4"></path></svg>
+                        <span class="font-semibold">Trending</span>
                     </Link>
-                    <Link href="#" class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-xl transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <span>Subscriptions</span>
+                    <Link 
+                        :href="route('home', { filter: 'subscriptions' })"
+                        class="flex items-center gap-5 px-3 py-2.5 rounded-xl transition-all"
+                        :class="currentFilter === 'subscriptions' ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600' : 'hover:bg-gray-100 dark:hover:bg-zinc-800'"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="font-semibold">Subscriptions</span>
                     </Link>
                 </div>
                 
