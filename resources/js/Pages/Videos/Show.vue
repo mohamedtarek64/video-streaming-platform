@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
 
 const props = defineProps<{
     user: {
@@ -74,6 +75,32 @@ const toggleSubscribe = () => {
 
 const vote = (type: 'up' | 'down') => {
     router.post(route('videos.vote', [props.video.id, type]), {}, { preserveScroll: true });
+};
+
+const progress = ref(0);
+let progressInterval: any = null;
+
+onMounted(() => {
+    progressInterval = setInterval(() => {
+        progress.value += 1;
+        if (progress.value % 10 === 0 && props.user) {
+            saveProgress();
+        }
+    }, 1000);
+});
+
+onUnmounted(() => {
+    if (progressInterval) clearInterval(progressInterval);
+});
+
+const saveProgress = async () => {
+    try {
+        await axios.post(route('videos.history', props.video.id), {
+            progress: progress.value,
+        });
+    } catch (error) {
+        console.error('Failed to save progress', error);
+    }
 };
 
 const formatViews = (views: number) => {

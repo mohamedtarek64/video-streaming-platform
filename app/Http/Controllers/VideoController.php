@@ -34,6 +34,7 @@ class VideoController extends Controller
 
     public function show(Video $video)
     {
+        $video->increment('views');
         $video->load(['channel.user', 'comments.user']);
         $video->loadCount(['upVotes', 'downVotes']);
         
