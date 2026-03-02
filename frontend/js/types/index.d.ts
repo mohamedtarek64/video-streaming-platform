@@ -12,6 +12,11 @@ export type PageProps<
 > = T & {
     auth: {
         user: User;
+        channel: {
+            id: number;
+            name: string;
+            slug: string;
+        } | null;
     };
     ziggy: Config & { location: string };
 };
