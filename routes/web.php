@@ -13,6 +13,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\WatchHistoryController;
 
 Route::get('/', [VideoController::class, 'index'])->name('home');
+Route::get('/channel/{channel:slug}', [ChannelController::class, 'show'])->name('channel.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
@@ -22,7 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('videos', VideoController::class)->except(['index']);
     Route::get('/channel/create', [ChannelController::class, 'create'])->name('channel.create');
     Route::post('/channel', [ChannelController::class, 'store'])->name('channel.store');
-    Route::get('/channel/{channel:slug}', [ChannelController::class, 'show'])->name('channel.show');
+    Route::get('/settings/channel', [ChannelController::class, 'edit'])->name('channel.edit');
+    Route::post('/settings/channel', [ChannelController::class, 'update'])->name('channel.update');
     
     // Interactions
     Route::post('/videos/{video}/vote/{type}', [VoteController::class, 'voteVideo'])->name('videos.vote');
