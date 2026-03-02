@@ -7,6 +7,10 @@ use Inertia\Inertia;
 
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\ChannelController;
+use App\Http\Controllers\VoteController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\WatchHistoryController;
 
 Route::get('/', [VideoController::class, 'index'])->name('home');
 

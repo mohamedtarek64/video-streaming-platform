@@ -75,7 +75,7 @@ class VideoController extends Controller
         ]);
     }
 
-    public function upload()
+    public function create()
     {
         $user = auth()->user();
         $channel = $user->channel;
