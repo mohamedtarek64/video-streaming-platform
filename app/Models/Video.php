@@ -45,4 +45,19 @@ class Video extends Model
     {
         return $query->where('status', 'ready');
     }
+
+    public function votes()
+    {
+        return $this->morphMany(Vote::class, 'votable');
+    }
+
+    public function upVotes()
+    {
+        return $this->votes()->where('type', 1);
+    }
+
+    public function downVotes()
+    {
+        return $this->votes()->where('type', -1);
+    }
 }

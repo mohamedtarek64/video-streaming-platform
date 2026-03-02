@@ -19,6 +19,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/channel/create', [ChannelController::class, 'create'])->name('channel.create');
     Route::post('/channel', [ChannelController::class, 'store'])->name('channel.store');
     Route::get('/channel/{channel:slug}', [ChannelController::class, 'show'])->name('channel.show');
+    
+    // Interactions
+    Route::post('/videos/{video}/vote/{type}', [VoteController::class, 'voteVideo'])->name('videos.vote');
+    Route::post('/comments/{comment}/vote/{type}', [VoteController::class, 'voteComment'])->name('comments.vote');
+    Route::post('/channels/{channel}/subscribe', [SubscriptionController::class, 'store'])->name('channels.subscribe');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

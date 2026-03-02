@@ -22,4 +22,19 @@ class Comment extends Model
     {
         return $this->belongsTo(Video::class);
     }
+
+    public function votes()
+    {
+        return $this->morphMany(Vote::class, 'votable');
+    }
+
+    public function upVotes()
+    {
+        return $this->votes()->where('type', 1);
+    }
+
+    public function downVotes()
+    {
+        return $this->votes()->where('type', -1);
+    }
 }

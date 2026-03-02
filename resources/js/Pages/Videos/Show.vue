@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -11,7 +11,13 @@ const props = defineProps<{
         views: number;
         created_at: string;
         thumbnail_path: string;
+        user_vote: 'up' | 'down' | null;
+        is_subscribed: boolean;
+        up_votes_count: number;
+        down_votes_count: number;
+        channel_id: number;
         channel: {
+            id: number;
             name: string;
             avatar_path: string | null;
             slug: string;
@@ -39,10 +45,12 @@ const props = defineProps<{
     }>;
 }>();
 
-const isSubscribed = ref(false);
-
 const toggleSubscribe = () => {
-    isSubscribed.value = !isSubscribed.value;
+    router.post(route('channels.subscribe', props.video.channel.id), {}, { preserveScroll: true });
+};
+
+const vote = (type: 'up' | 'down') => {
+    router.post(route('videos.vote', [props.video.id, type]), {}, { preserveScroll: true });
 };
 
 const formatViews = (views: number) => {
@@ -124,20 +132,28 @@ const formatDate = (dateString: string) => {
                             <button 
                                 @click="toggleSubscribe"
                                 class="ml-4 px-6 py-2 rounded-full font-bold transition-all"
-                                :class="isSubscribed ? 'bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
+                                :class="video.is_subscribed ? 'bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
                             >
-                                {{ isSubscribed ? 'Subscribed' : 'Subscribe' }}
+                                {{ video.is_subscribed ? 'Subscribed' : 'Subscribe' }}
                             </button>
                         </div>
                         
                         <div class="flex items-center gap-2">
                             <div class="flex bg-gray-100 dark:bg-zinc-900 rounded-full">
-                                <button class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-l-full border-r border-gray-200 dark:border-zinc-750">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                                    <span class="font-medium">12K</span>
+                                <button 
+                                    @click="vote('up')"
+                                    class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-l-full border-r border-gray-200 dark:border-zinc-750 transition-colors"
+                                    :class="{ 'text-indigo-600': video.user_vote === 'up' }"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" :fill="video.user_vote === 'up' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                                    <span class="font-medium">{{ formatViews(video.up_votes_count) }}</span>
                                 </button>
-                                <button class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-r-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                                <button 
+                                    @click="vote('down')"
+                                    class="px-4 py-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-r-full transition-colors"
+                                    :class="{ 'text-indigo-600': video.user_vote === 'down' }"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" :fill="video.user_vote === 'down' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
                                 </button>
                             </div>
                             <button class="bg-gray-100 dark:bg-zinc-900 px-4 py-2 rounded-full flex items-center gap-2 font-medium hover:bg-gray-200 dark:hover:bg-zinc-800">

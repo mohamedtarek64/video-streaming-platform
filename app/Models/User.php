@@ -70,4 +70,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(WatchHistory::class);
     }
+
+    public function votes()
+    {
+        return $this->hasMany(Vote::class);
+    }
 }

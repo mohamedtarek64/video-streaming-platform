@@ -35,7 +35,18 @@ class VideoController extends Controller
     public function show(Video $video)
     {
         $video->load(['channel.user', 'comments.user']);
+        $video->loadCount(['upVotes', 'downVotes']);
         
+        $user = auth()->user();
+        $user_vote = null;
+        $is_subscribed = false;
+
+        if ($user) {
+            $existingVote = $video->votes()->where('user_id', $user->id)->first();
+            $user_vote = $existingVote ? ($existingVote->type == 1 ? 'up' : 'down') : null;
+            $is_subscribed = $user->subscriptions()->where('channel_id', $video->channel_id)->exists();
+        }
+
         $suggestions = Video::with('channel')
             ->where('id', '!=', $video->id)
             ->ready()
@@ -44,7 +55,12 @@ class VideoController extends Controller
             ->get();
 
         return Inertia::render('Videos/Show', [
-            'video' => $video,
+            'video' => array_merge($video->toArray(), [
+                'user_vote' => $user_vote,
+                'is_subscribed' => $is_subscribed,
+                'up_votes_count' => $video->up_votes_count,
+                'down_votes_count' => $video->down_votes_count,
+            ]),
             'suggestions' => $suggestions,
         ]);
     }
