@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps<{
+    user: {
+        id: number;
+        name: string;
+    } | null;
     video: {
         id: number;
         title: string;
@@ -18,6 +22,7 @@ const props = defineProps<{
         channel_id: number;
         channel: {
             id: number;
+            user_id: number;
             name: string;
             avatar_path: string | null;
             slug: string;
@@ -27,6 +32,7 @@ const props = defineProps<{
             id: number;
             body: string;
             created_at: string;
+            user_id: number;
             user: {
                 name: string;
             };
@@ -44,6 +50,23 @@ const props = defineProps<{
         };
     }>;
 }>();
+
+const commentForm = useForm({
+    body: '',
+});
+
+const submitComment = () => {
+    commentForm.post(route('comments.store', props.video.id), {
+        onSuccess: () => commentForm.reset(),
+        preserveScroll: true,
+    });
+};
+
+const deleteComment = (id: number) => {
+    if (confirm('Are you sure you want to delete this comment?')) {
+        router.delete(route('comments.destroy', id), { preserveScroll: true });
+    }
+};
 
 const toggleSubscribe = () => {
     router.post(route('channels.subscribe', props.video.channel.id), {}, { preserveScroll: true });
@@ -181,42 +204,57 @@ const formatDate = (dateString: string) => {
                     <h3 class="text-xl font-bold mb-6">{{ video.comments.length }} Comments</h3>
                     
                     <!-- New Comment Input -->
-                    <div class="flex gap-4 mb-8">
-                        <div class="size-10 rounded-full bg-gray-200 dark:bg-zinc-800 shrink-0"></div>
+                    <div v-if="user" class="flex gap-4 mb-8">
+                        <div class="size-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 font-bold">
+                            {{ user.name[0] }}
+                        </div>
                         <div class="flex-1">
-                            <input 
-                                type="text"
-                                placeholder="Add a comment..."
-                                class="w-full bg-transparent border-b border-gray-300 dark:border-zinc-700 focus:border-indigo-600 focus:ring-0 px-0 py-2 transition-all outline-none"
-                            />
-                            <div class="flex justify-end gap-2 mt-2">
-                                <button class="px-4 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 text-sm font-bold">Cancel</button>
-                                <button class="px-4 py-2 rounded-full bg-indigo-600 text-white text-sm font-bold opacity-50 cursor-not-allowed">Comment</button>
+                            <textarea 
+                                v-model="commentForm.body"
+                                placeholder="Add a comment..." 
+                                class="w-full bg-transparent border-b border-gray-200 dark:border-zinc-800 focus:border-indigo-600 outline-none py-2 resize-none transition-all no-scrollbar"
+                                rows="1"
+                            ></textarea>
+                            <div class="flex justify-end gap-3 mt-2">
+                                <button @click="commentForm.reset()" class="px-4 py-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full text-sm font-bold">Cancel</button>
+                                <button 
+                                    @click="submitComment"
+                                    :disabled="!commentForm.body || commentForm.processing"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Comment
+                                </button>
                             </div>
                         </div>
                     </div>
+                    <div v-else class="mb-8 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl text-center">
+                        <Link :href="route('login')" class="text-indigo-600 font-bold hover:underline">Log in</Link> to post a comment
+                    </div>
 
-                    <!-- List of Comments -->
+                    <!-- Comment List -->
                     <div class="space-y-6">
-                        <div v-for="comment in video.comments" :key="comment.id" class="flex gap-4">
-                            <div class="size-10 rounded-full bg-gray-200 dark:bg-zinc-800 shrink-0 flex items-center justify-center font-bold">
+                        <div v-for="comment in video.comments" :key="comment.id" class="flex gap-4 group">
+                            <div class="size-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center shrink-0 font-bold">
                                 {{ comment.user.name[0] }}
                             </div>
                             <div class="flex-1">
-                                <div class="flex items-center gap-2 text-sm">
-                                    <span class="font-bold">{{ comment.user.name }}</span>
-                                    <span class="text-gray-500 text-xs">{{ formatDate(comment.created_at) }}</span>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="font-bold text-sm">{{ comment.user.name }}</span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(comment.created_at) }}</span>
                                 </div>
-                                <p class="mt-1 text-sm text-gray-800 dark:text-gray-200">{{ comment.body }}</p>
+                                <p class="text-sm dark:text-gray-300 leading-relaxed">{{ comment.body }}</p>
                                 <div class="flex items-center gap-4 mt-2">
-                                    <button class="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    <button class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 font-bold">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                                        <span class="text-xs">0</span>
+                                        Like
                                     </button>
-                                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zM17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                                    <button 
+                                        v-if="user && (user.id === comment.user_id || user.id === video.channel.user_id)"
+                                        @click="deleteComment(comment.id)"
+                                        class="flex items-center gap-1.5 text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity font-bold"
+                                    >
+                                        Delete
                                     </button>
-                                    <button class="text-xs font-bold text-gray-500">Reply</button>
                                 </div>
                             </div>
                         </div>

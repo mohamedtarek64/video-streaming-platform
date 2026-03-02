@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/comments/{comment}/vote/{type}', [VoteController::class, 'voteComment'])->name('comments.vote');
     Route::post('/channels/{channel}/subscribe', [SubscriptionController::class, 'store'])->name('channels.subscribe');
 
+    // Comments
+    Route::post('/videos/{video}/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
