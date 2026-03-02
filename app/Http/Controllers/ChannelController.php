@@ -16,7 +16,9 @@ class ChannelController extends Controller
         }]);
 
         return Inertia::render('Channels/Show', [
-            'channel' => $channel,
+            'channel' => array_merge($channel->toArray(), [
+                'can_edit' => auth()->id() === $channel->user_id,
+            ]),
         ]);
     }
 
@@ -45,5 +47,53 @@ class ChannelController extends Controller
         ]);
 
         return redirect()->route('channel.show', $channel->slug);
+    }
+
+    public function edit()
+    {
+        $user = auth()->user();
+        $channel = $user->channel;
+
+        if (!$channel) {
+            return redirect()->route('channel.create');
+        }
+
+        return Inertia::render('Channels/Settings', [
+            'channel' => $channel,
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $user = auth()->user();
+        $channel = $user->channel;
+
+        if (!$channel) {
+            return back()->withErrors(['message' => 'No channel found.']);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'avatar' => 'nullable|image|max:2048',
+            'banner' => 'nullable|image|max:5120',
+        ]);
+
+        $channel->name = $request->name;
+        $channel->description = $request->description;
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $channel->avatar_path = '/storage/' . $path;
+        }
+
+        if ($request->hasFile('banner')) {
+            $path = $request->file('banner')->store('banners', 'public');
+            $channel->banner_path = '/storage/' . $path;
+        }
+
+        $channel->save();
+
+        return redirect()->route('channel.show', $channel->slug)->with('success', 'Channel updated successfully.');
     }
 }
