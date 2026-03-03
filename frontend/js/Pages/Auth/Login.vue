@@ -5,12 +5,17 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, route } from '@/shims/inertia';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 defineProps<{
     canResetPassword?: boolean;
     status?: string;
 }>();
+
+const router = useRouter();
+const auth = useAuthStore();
 
 const form = useForm({
     email: '',
@@ -20,6 +25,11 @@ const form = useForm({
 
 const submit = () => {
     form.post(route('login'), {
+        onSuccess: (data: any) => {
+            auth.user = data.user;
+            auth.channel = data.channel;
+            router.push({ name: 'home' });
+        },
         onFinish: () => {
             form.reset('password');
         },
